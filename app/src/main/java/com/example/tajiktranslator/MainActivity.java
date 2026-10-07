@@ -9,79 +9,105 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.*;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Locale;
 
 public class MainActivity extends Activity {
 
-    int BG = Color.rgb(10, 18, 35);
-    int CARD = Color.rgb(22, 32, 54);
-    int BLUE = Color.rgb(45, 125, 255);
-    int WHITE = Color.WHITE;
-    int GRAY = Color.rgb(170, 180, 200);
-
-    LinearLayout main;
     EditText input;
     TextView result;
-    Spinner fromLanguage;
-    Spinner toLanguage;
+    Spinner fromLanguage, toLanguage;
+
+    HashMap<String, String> tjToRu = new HashMap<>();
+    HashMap<String, String> tjToEn = new HashMap<>();
+    HashMap<String, String> ruToTj = new HashMap<>();
+    HashMap<String, String> ruToEn = new HashMap<>();
+    HashMap<String, String> enToTj = new HashMap<>();
+    HashMap<String, String> enToRu = new HashMap<>();
 
     String[] languages = {
             "🇹🇯  Тоҷикӣ",
-            "🇬🇧  English",
-            "🇷🇺  Русский"
+            "🇷🇺  Русӣ",
+            "🇬🇧  English"
     };
+
+    int BLUE = Color.rgb(45, 125, 245);
+    int DARK = Color.rgb(10, 19, 40);
+    int CARD = Color.rgb(25, 38, 65);
+    int WHITE = Color.WHITE;
+
+    int dp(float v) {
+        return (int)(v * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    GradientDrawable box(int color, float radius) {
+        GradientDrawable g = new GradientDrawable();
+        g.setColor(color);
+        g.setCornerRadius(dp(radius));
+        return g;
+    }
+
+    TextView label(String text, float size) {
+        TextView t = new TextView(this);
+        t.setText(text);
+        t.setTextSize(size);
+        t.setTextColor(WHITE);
+        return t;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        main = new LinearLayout(this);
-        main.setOrientation(LinearLayout.VERTICAL);
-        main.setPadding(20, 25, 20, 20);
-        main.setBackgroundColor(BG);
+        loadDictionary();
 
         ScrollView scroll = new ScrollView(this);
+        scroll.setFillViewport(true);
+        scroll.setBackgroundColor(DARK);
 
-        LinearLayout content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout main = new LinearLayout(this);
+        main.setOrientation(LinearLayout.VERTICAL);
+        main.setPadding(dp(20), dp(25), dp(20), dp(30));
 
-        // LOGO
-        TextView logo = new TextView(this);
-        logo.setText("🌐");
-        logo.setTextSize(45);
-        logo.setGravity(Gravity.CENTER);
+        // HEADER
+        TextView icon = label("🌐", 42);
+        icon.setGravity(Gravity.CENTER);
 
-        content.addView(
-                logo,
-                new LinearLayout.LayoutParams(-1, 65)
-        );
+        main.addView(icon,
+                new LinearLayout.LayoutParams(-1, dp(55)));
 
-        // TITLE
-        TextView title = new TextView(this);
-        title.setText("TAJIK TRANSLATOR");
-        title.setTextSize(27);
-        title.setTextColor(WHITE);
-        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        TextView title = label("TAJIK TRANSLATOR", 27);
+        title.setTypeface(null, Typeface.BOLD);
         title.setGravity(Gravity.CENTER);
 
-        content.addView(title);
+        main.addView(title);
 
-        // SUBTITLE
-        TextView subtitle = new TextView(this);
-        subtitle.setText("Тоҷикӣ  •  English  •  Русский");
-        subtitle.setTextSize(14);
-        subtitle.setTextColor(GRAY);
+        TextView subtitle = label(
+                "Тоҷикӣ  •  English  •  Русский",
+                15
+        );
+        subtitle.setTextColor(Color.LTGRAY);
         subtitle.setGravity(Gravity.CENTER);
-        subtitle.setPadding(0, 5, 0, 20);
 
-        content.addView(subtitle);
+        main.addView(subtitle);
+
+        addSpace(main, 20);
 
         // LANGUAGE CARD
-        LinearLayout languageCard = new LinearLayout(this);
-        languageCard.setOrientation(LinearLayout.HORIZONTAL);
-        languageCard.setGravity(Gravity.CENTER_VERTICAL);
-        languageCard.setPadding(12, 8, 12, 8);
-        languageCard.setBackground(round(CARD, 25));
+        LinearLayout langCard = new LinearLayout(this);
+        langCard.setOrientation(LinearLayout.HORIZONTAL);
+        langCard.setGravity(Gravity.CENTER_VERTICAL);
+        langCard.setPadding(dp(8), dp(8), dp(8), dp(8));
+        langCard.setBackground(box(CARD, 22));
 
         fromLanguage = new Spinner(this);
         toLanguage = new Spinner(this);
@@ -96,226 +122,410 @@ public class MainActivity extends Activity {
         fromLanguage.setAdapter(adapter);
         toLanguage.setAdapter(adapter);
 
+        // Пешфарз: Тоҷикӣ → Русӣ
         fromLanguage.setSelection(0);
         toLanguage.setSelection(1);
 
-        languageCard.addView(
+        langCard.addView(
                 fromLanguage,
-                new LinearLayout.LayoutParams(0, 60, 1)
+                new LinearLayout.LayoutParams(
+                        0, dp(55), 1
+                )
         );
 
-        TextView swap = new TextView(this);
-        swap.setText("⇄");
-        swap.setTextSize(28);
+        TextView swap = label("⇄", 32);
         swap.setTextColor(BLUE);
         swap.setGravity(Gravity.CENTER);
+        swap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-        languageCard.addView(
+                int a = fromLanguage.getSelectedItemPosition();
+                int b = toLanguage.getSelectedItemPosition();
+
+                fromLanguage.setSelection(b);
+                toLanguage.setSelection(a);
+            }
+        });
+
+        langCard.addView(
                 swap,
-                new LinearLayout.LayoutParams(55, 60)
+                new LinearLayout.LayoutParams(
+                        dp(55), dp(55)
+                )
         );
 
-        languageCard.addView(
+        langCard.addView(
                 toLanguage,
-                new LinearLayout.LayoutParams(0, 60, 1)
+                new LinearLayout.LayoutParams(
+                        0, dp(55), 1
+                )
         );
 
-        content.addView(
-                languageCard,
-                new LinearLayout.LayoutParams(-1, 75)
-        );
+        main.addView(langCard);
+
+        addSpace(main, 18);
+
+        // INPUT TITLE
+        TextView inputTitle = label("Матн", 18);
+        inputTitle.setTypeface(null, Typeface.BOLD);
+
+        main.addView(inputTitle);
+
+        addSpace(main, 8);
 
         // INPUT
-        TextView inputTitle = new TextView(this);
-        inputTitle.setText("  Матн");
-        inputTitle.setTextSize(16);
-        inputTitle.setTextColor(WHITE);
-        inputTitle.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        inputTitle.setPadding(0, 20, 0, 8);
-
-        content.addView(inputTitle);
+        LinearLayout inputCard = new LinearLayout(this);
+        inputCard.setPadding(
+                dp(18), dp(12), dp(18), dp(12)
+        );
+        inputCard.setBackground(box(CARD, 22));
 
         input = new EditText(this);
-        input.setHint("Матни худро нависед...");
-        input.setHintTextColor(GRAY);
         input.setTextColor(WHITE);
-        input.setTextSize(18);
-        input.setGravity(Gravity.TOP | Gravity.START);
-        input.setPadding(20, 18, 20, 18);
-        input.setBackground(round(CARD, 25));
+        input.setHintTextColor(Color.rgb(170, 180, 200));
+        input.setHint("Матнро ин ҷо нависед...");
+        input.setTextSize(20);
+        input.setGravity(Gravity.TOP);
+        input.setMinHeight(dp(130));
+        input.setBackgroundColor(Color.TRANSPARENT);
 
-        LinearLayout.LayoutParams inputParams =
-                new LinearLayout.LayoutParams(-1, 170);
+        inputCard.addView(
+                input,
+                new LinearLayout.LayoutParams(
+                        -1, dp(130)
+                )
+        );
 
-        content.addView(input, inputParams);
+        main.addView(inputCard);
+
+        addSpace(main, 16);
 
         // TRANSLATE BUTTON
         Button translate = new Button(this);
         translate.setText("✨  ТАРҶУМА КУН");
         translate.setTextSize(17);
+        translate.setTypeface(null, Typeface.BOLD);
         translate.setTextColor(WHITE);
-        translate.setTypeface(
-                Typeface.DEFAULT,
-                Typeface.BOLD
-        );
         translate.setAllCaps(false);
-        translate.setBackground(round(BLUE, 30));
+        translate.setBackground(box(BLUE, 20));
 
-        LinearLayout.LayoutParams translateParams =
-                new LinearLayout.LayoutParams(-1, 65);
-
-        translateParams.setMargins(0, 18, 0, 0);
-
-        content.addView(
+        main.addView(
                 translate,
-                translateParams
+                new LinearLayout.LayoutParams(
+                        -1, dp(60)
+                )
         );
+
+        addSpace(main, 18);
 
         // RESULT TITLE
-        TextView resultTitle = new TextView(this);
-        resultTitle.setText("  Тарҷума");
-        resultTitle.setTextSize(16);
-        resultTitle.setTextColor(WHITE);
-        resultTitle.setTypeface(
-                Typeface.DEFAULT,
-                Typeface.BOLD
-        );
-        resultTitle.setPadding(0, 20, 0, 8);
+        TextView resultTitle = label("Тарҷума", 18);
+        resultTitle.setTypeface(null, Typeface.BOLD);
 
-        content.addView(resultTitle);
+        main.addView(resultTitle);
 
-        // RESULT
-        result = new TextView(this);
-        result.setText(
-                "Натиҷаи тарҷума дар ин ҷо нишон дода мешавад..."
-        );
-        result.setTextSize(18);
-        result.setTextColor(WHITE);
-        result.setGravity(
-                Gravity.TOP | Gravity.START
-        );
-        result.setPadding(20, 20, 20, 20);
-        result.setBackground(round(CARD, 25));
+        addSpace(main, 8);
 
-        content.addView(
-                result,
-                new LinearLayout.LayoutParams(-1, 170)
+        // RESULT CARD
+        LinearLayout resultCard = new LinearLayout(this);
+        resultCard.setOrientation(LinearLayout.VERTICAL);
+        resultCard.setPadding(
+                dp(18), dp(16), dp(18), dp(18)
         );
+        resultCard.setBackground(box(CARD, 22));
 
-        // BOTTOM BUTTONS
+        result = label(
+                "Натиҷаи тарҷума дар ин ҷо пайдо мешавад.",
+                19
+        );
+        result.setTextColor(Color.rgb(235, 240, 250));
+        result.setPadding(0, dp(5), 0, dp(10));
+
+        resultCard.addView(result);
+
+        main.addView(resultCard);
+
+        addSpace(main, 14);
+
+        // COPY + CLEAR
         LinearLayout buttons = new LinearLayout(this);
-        buttons.setGravity(Gravity.CENTER);
-        buttons.setPadding(0, 15, 0, 10);
+        buttons.setOrientation(LinearLayout.HORIZONTAL);
 
         Button copy = new Button(this);
         copy.setText("📋  COPY");
-        copy.setTextColor(WHITE);
+        copy.setTextSize(15);
         copy.setAllCaps(false);
+        copy.setTextColor(WHITE);
+        copy.setBackground(box(Color.rgb(45, 55, 80), 16));
 
         Button clear = new Button(this);
         clear.setText("🗑  CLEAR");
-        clear.setTextColor(WHITE);
+        clear.setTextSize(15);
         clear.setAllCaps(false);
+        clear.setTextColor(WHITE);
+        clear.setBackground(box(Color.rgb(45, 55, 80), 16));
 
-        buttons.addView(
-                copy,
-                new LinearLayout.LayoutParams(0, 60, 1)
-        );
-
-        buttons.addView(
-                clear,
-                new LinearLayout.LayoutParams(0, 60, 1)
-        );
-
-        content.addView(buttons);
-
-        // TRANSLATE
-        translate.setOnClickListener(v -> {
-
-            String text =
-                    input.getText().toString().trim();
-
-            if (text.isEmpty()) {
-
-                result.setText(
-                        "⚠️ Аввал матнро нависед."
+        LinearLayout.LayoutParams bp =
+                new LinearLayout.LayoutParams(
+                        0, dp(55), 1
                 );
 
-            } else {
+        bp.setMargins(0, 0, dp(6), 0);
+        buttons.addView(copy, bp);
+
+        LinearLayout.LayoutParams bp2 =
+                new LinearLayout.LayoutParams(
+                        0, dp(55), 1
+                );
+
+        bp2.setMargins(dp(6), 0, 0, 0);
+        buttons.addView(clear, bp2);
+
+        main.addView(buttons);
+
+        addSpace(main, 20);
+
+        TextView footer = label(
+                "🇹🇯  Тоҷикӣ  •  🇷🇺  Русӣ  •  🇬🇧  English",
+                13
+        );
+        footer.setTextColor(Color.GRAY);
+        footer.setGravity(Gravity.CENTER);
+
+        main.addView(footer);
+
+        // TRANSLATE
+        translate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String text =
+                        input.getText().toString().trim();
+
+                if (text.isEmpty()) {
+                    result.setText("⚠️ Аввал матнро нависед.");
+                    return;
+                }
 
                 String from =
-                        fromLanguage
-                                .getSelectedItem()
-                                .toString();
+                        fromLanguage.getSelectedItem().toString();
 
                 String to =
-                        toLanguage
-                                .getSelectedItem()
-                                .toString();
+                        toLanguage.getSelectedItem().toString();
 
                 result.setText(
-                        "Аз: " + from +
-                        "\nБа: " + to +
-                        "\n\n" + text
+                        from + "  →  " + to +
+                        "\n\n" +
+                        translateText(text, from, to)
                 );
             }
         });
 
         // COPY
-        copy.setOnClickListener(v -> {
+        copy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-            ClipboardManager clipboard =
-                    (ClipboardManager)
-                    getSystemService(
-                            Context.CLIPBOARD_SERVICE
-                    );
+                String text = result.getText().toString();
 
-            ClipData clip =
-                    ClipData.newPlainText(
-                            "translation",
-                            result.getText().toString()
-                    );
+                ClipboardManager clipboard =
+                        (ClipboardManager)
+                                getSystemService(
+                                        Context.CLIPBOARD_SERVICE
+                                );
 
-            clipboard.setPrimaryClip(clip);
+                clipboard.setPrimaryClip(
+                        ClipData.newPlainText(
+                                "Translation",
+                                text
+                        )
+                );
 
-            Toast.makeText(
-                    this,
-                    "✓ Нусха шуд",
-                    Toast.LENGTH_SHORT
-            ).show();
+                Toast.makeText(
+                        MainActivity.this,
+                        "✅ Натиҷа нусха шуд",
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
         });
 
         // CLEAR
-        clear.setOnClickListener(v -> {
+        clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-            input.setText("");
+                input.setText("");
 
-            result.setText(
-                    "Натиҷаи тарҷума дар ин ҷо нишон дода мешавад..."
-            );
+                result.setText(
+                        "Натиҷаи тарҷума дар ин ҷо пайдо мешавад."
+                );
+            }
         });
 
-        scroll.addView(content);
-
-        main.addView(
-                scroll,
-                new LinearLayout.LayoutParams(-1, -1)
-        );
-
-        setContentView(main);
+        scroll.addView(main);
+        setContentView(scroll);
     }
 
-    GradientDrawable round(
-            int color,
-            int radius
+    private void addSpace(
+            LinearLayout parent,
+            int height
+    ) {
+        Space space = new Space(this);
+
+        parent.addView(
+                space,
+                new LinearLayout.LayoutParams(
+                        1, dp(height)
+                )
+        );
+    }
+
+    private void loadDictionary() {
+
+        try {
+
+            InputStream stream =
+                    getAssets().open("dictionary.json");
+
+            BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(stream)
+                    );
+
+            StringBuilder builder =
+                    new StringBuilder();
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+            }
+
+            reader.close();
+
+            JSONArray array =
+                    new JSONArray(builder.toString());
+
+            for (int i = 0; i < array.length(); i++) {
+
+                JSONObject word =
+                        array.getJSONObject(i);
+
+                String tj =
+                        word.getString("tj")
+                                .toLowerCase(Locale.ROOT)
+                                .trim();
+
+                String ru =
+                        word.getString("ru")
+                                .toLowerCase(Locale.ROOT)
+                                .trim();
+
+                String en =
+                        word.getString("en")
+                                .toLowerCase(Locale.ROOT)
+                                .trim();
+
+                tjToRu.put(tj, ru);
+                tjToEn.put(tj, en);
+
+                ruToTj.put(ru, tj);
+                ruToEn.put(ru, en);
+
+                enToTj.put(en, tj);
+                enToRu.put(en, ru);
+            }
+
+        } catch (Exception e) {
+
+            Toast.makeText(
+                    this,
+                    "dictionary.json ёфт нашуд!",
+                    Toast.LENGTH_LONG
+            ).show();
+        }
+    }
+
+    private String translateText(
+            String text,
+            String from,
+            String to
     ) {
 
-        GradientDrawable g =
-                new GradientDrawable();
+        String lower =
+                text.toLowerCase(Locale.ROOT).trim();
 
-        g.setColor(color);
-        g.setCornerRadius(radius);
+        if (from.contains("Тоҷикӣ") &&
+                to.contains("Русӣ"))
+            return findTranslation(lower, tjToRu);
 
-        return g;
+        if (from.contains("Тоҷикӣ") &&
+                to.contains("English"))
+            return findTranslation(lower, tjToEn);
+
+        if (from.contains("Русӣ") &&
+                to.contains("Тоҷикӣ"))
+            return findTranslation(lower, ruToTj);
+
+        if (from.contains("Русӣ") &&
+                to.contains("English"))
+            return findTranslation(lower, ruToEn);
+
+        if (from.contains("English") &&
+                to.contains("Тоҷикӣ"))
+            return findTranslation(lower, enToTj);
+
+        if (from.contains("English") &&
+                to.contains("Русӣ"))
+            return findTranslation(lower, enToRu);
+
+        if (from.equals(to))
+            return text;
+
+        return "❌ Тарҷума ёфт нашуд.";
+    }
+
+    private String findTranslation(
+            String text,
+            HashMap<String, String> dictionary
+    ) {
+
+        if (dictionary.containsKey(text))
+            return dictionary.get(text);
+
+        String[] words =
+                text.split("\\s+");
+
+        StringBuilder output =
+                new StringBuilder();
+
+        for (String word : words) {
+
+            String clean =
+                    word.replaceAll(
+                            "[.,!?;:()\\[\\]{}\"]",
+                            ""
+                    )
+                    .toLowerCase(Locale.ROOT);
+
+            String translated =
+                    dictionary.get(clean);
+
+            if (translated != null)
+                output.append(translated);
+            else
+                output.append(word);
+
+            output.append(" ");
+        }
+
+        String finalText =
+                output.toString().trim();
+
+        if (finalText.equals(text))
+            return "❌ Ин калима дар луғат нест.";
+
+        return finalText;
     }
             }
