@@ -8,374 +8,148 @@ import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.*;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Locale;
 
 public class MainActivity extends Activity {
 
+    LinearLayout main;
     EditText input;
     TextView result;
-    Spinner fromLanguage;
-    Spinner toLanguage;
 
-    HashMap<String, String> tjToRu = new HashMap<>();
-    HashMap<String, String> tjToEn = new HashMap<>();
-    HashMap<String, String> ruToTj = new HashMap<>();
-    HashMap<String, String> ruToEn = new HashMap<>();
-    HashMap<String, String> enToTj = new HashMap<>();
-    HashMap<String, String> enToRu = new HashMap<>();
-
-    String[] languages = {
-            "🇹🇯  Тоҷикӣ",
-            "🇷🇺  Русӣ",
-            "🇬🇧  English"
-    };
-
-    int dp(float v) {
-        return (int) (v * getResources().getDisplayMetrics().density + 0.5f);
-    }
-
-    GradientDrawable bg(int color, float radius) {
-        GradientDrawable d = new GradientDrawable();
-        d.setColor(color);
-        d.setCornerRadius(dp(radius));
-        return d;
-    }
-
-    TextView text(String value, float size, int color) {
-        TextView t = new TextView(this);
-        t.setText(value);
-        t.setTextSize(size);
-        t.setTextColor(color);
-        return t;
-    }
+    int blue = Color.rgb(25, 118, 210);
+    int dark = Color.rgb(18, 24, 38);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        loadDictionary();
-
-        ScrollView scroll = new ScrollView(this);
-        scroll.setBackgroundColor(Color.rgb(244, 247, 252));
-
-        LinearLayout main = new LinearLayout(this);
+        main = new LinearLayout(this);
         main.setOrientation(LinearLayout.VERTICAL);
-        main.setPadding(dp(18), dp(22), dp(18), dp(30));
+        main.setPadding(24, 30, 24, 24);
+        main.setBackgroundColor(Color.rgb(245, 247, 251));
 
-        // HEADER
-        LinearLayout header = new LinearLayout(this);
-        header.setOrientation(LinearLayout.VERTICAL);
-        header.setGravity(Gravity.CENTER);
-        header.setPadding(dp(20), dp(24), dp(20), dp(24));
-        header.setBackground(bg(Color.rgb(35, 105, 220), 28));
-
-        TextView icon = text("🌐", 42, Color.WHITE);
-        icon.setGravity(Gravity.CENTER);
-        header.addView(icon);
-
-        TextView title = text("TAJIK TRANSLATOR", 25, Color.WHITE);
-        title.setTypeface(null, Typeface.BOLD);
+        // TITLE
+        TextView title = new TextView(this);
+        title.setText("🌐  TAJIK TRANSLATOR");
+        title.setTextSize(25);
+        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        title.setTextColor(blue);
         title.setGravity(Gravity.CENTER);
-        header.addView(title);
+        main.addView(title, new LinearLayout.LayoutParams(
+                -1, 70
+        ));
 
-        TextView sub = text("Тоҷикӣ • Русӣ • English", 14, Color.WHITE);
-        sub.setGravity(Gravity.CENTER);
-        sub.setPadding(0, dp(7), 0, 0);
-        header.addView(sub);
+        // LANGUAGE BAR
+        LinearLayout languages = new LinearLayout(this);
+        languages.setGravity(Gravity.CENTER);
+        languages.setPadding(10, 10, 10, 10);
 
-        main.addView(header);
+        TextView tajik = languageButton("Тоҷикӣ");
+        TextView arrow = languageButton("  ⇄  ");
+        TextView english = languageButton("English");
 
-        Space s1 = new Space(this);
-        main.addView(s1, new LinearLayout.LayoutParams(1, dp(18)));
+        languages.addView(tajik);
+        languages.addView(arrow);
+        languages.addView(english);
 
-        // LANGUAGE CARD
-        LinearLayout langCard = new LinearLayout(this);
-        langCard.setOrientation(LinearLayout.HORIZONTAL);
-        langCard.setGravity(Gravity.CENTER_VERTICAL);
-        langCard.setPadding(dp(10), dp(10), dp(10), dp(10));
-        langCard.setBackground(bg(Color.WHITE, 22));
-
-        fromLanguage = new Spinner(this);
-        toLanguage = new Spinner(this);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_dropdown_item,
-                languages
-        );
-
-        fromLanguage.setAdapter(adapter);
-        toLanguage.setAdapter(adapter);
-        toLanguage.setSelection(1);
-
-        langCard.addView(
-                fromLanguage,
-                new LinearLayout.LayoutParams(0, dp(55), 1)
-        );
-
-        TextView swap = text("⇄", 28, Color.rgb(35, 105, 220));
-        swap.setGravity(Gravity.CENTER);
-
-        langCard.addView(
-                swap,
-                new LinearLayout.LayoutParams(dp(50), dp(55))
-        );
-
-        langCard.addView(
-                toLanguage,
-                new LinearLayout.LayoutParams(0, dp(55), 1)
-        );
-
-        main.addView(langCard);
-
-        Space s2 = new Space(this);
-        main.addView(s2, new LinearLayout.LayoutParams(1, dp(18)));
+        main.addView(languages);
 
         // INPUT
-        LinearLayout inputCard = new LinearLayout(this);
-        inputCard.setOrientation(LinearLayout.VERTICAL);
-        inputCard.setPadding(dp(18), dp(16), dp(18), dp(16));
-        inputCard.setBackground(bg(Color.WHITE, 22));
-
-        TextView inputLabel = text("✍️  Матни шумо", 16, Color.rgb(35, 45, 60));
-        inputLabel.setTypeface(null, Typeface.BOLD);
-        inputCard.addView(inputLabel);
-
         input = new EditText(this);
-        input.setHint("Матнро ин ҷо нависед...");
+        input.setHint("Матнро нависед...");
         input.setTextSize(18);
         input.setGravity(Gravity.TOP);
-        input.setMinHeight(dp(140));
-        input.setPadding(dp(5), dp(15), dp(5), dp(5));
-        input.setBackgroundColor(Color.TRANSPARENT);
+        input.setPadding(20, 20, 20, 20);
+        input.setBackground(round(Color.WHITE, 25));
 
-        inputCard.addView(input);
+        LinearLayout.LayoutParams inputParams =
+                new LinearLayout.LayoutParams(-1, 180);
+        inputParams.setMargins(0, 20, 0, 15);
+        main.addView(input, inputParams);
 
-        main.addView(inputCard);
-
-        Space s3 = new Space(this);
-        main.addView(s3, new LinearLayout.LayoutParams(1, dp(16)));
-
-        // BUTTON
+        // TRANSLATE BUTTON
         Button translate = new Button(this);
-        translate.setText("ТАРҶУМА КУН   →");
+        translate.setText("🌐  TRANSLATE");
         translate.setTextSize(17);
-        translate.setTypeface(null, Typeface.BOLD);
         translate.setTextColor(Color.WHITE);
-        translate.setAllCaps(false);
-        translate.setBackground(bg(Color.rgb(35, 105, 220), 20));
+        translate.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        translate.setBackground(round(blue, 30));
 
-        main.addView(
-                translate,
-                new LinearLayout.LayoutParams(-1, dp(60))
-        );
-
-        Space s4 = new Space(this);
-        main.addView(s4, new LinearLayout.LayoutParams(1, dp(16)));
+        main.addView(translate, new LinearLayout.LayoutParams(
+                -1, 65
+        ));
 
         // RESULT
-        LinearLayout resultCard = new LinearLayout(this);
-        resultCard.setOrientation(LinearLayout.VERTICAL);
-        resultCard.setPadding(dp(18), dp(16), dp(18), dp(22));
-        resultCard.setBackground(bg(Color.WHITE, 22));
+        result = new TextView(this);
+        result.setText("Тарҷума дар ин ҷо нишон дода мешавад...");
+        result.setTextSize(18);
+        result.setTextColor(Color.DKGRAY);
+        result.setPadding(20, 20, 20, 20);
+        result.setBackground(round(Color.WHITE, 25));
 
-        TextView resultLabel = text("✨  Натиҷа", 16, Color.rgb(35, 45, 60));
-        resultLabel.setTypeface(null, Typeface.BOLD);
-        resultCard.addView(resultLabel);
+        LinearLayout.LayoutParams resultParams =
+                new LinearLayout.LayoutParams(-1, 180);
+        resultParams.setMargins(0, 20, 0, 15);
+        main.addView(result, resultParams);
 
-        result = text(
-                "Натиҷаи тарҷума дар ин ҷо пайдо мешавад...",
-                18,
-                Color.DKGRAY
-        );
-        result.setPadding(0, dp(18), 0, 0);
+        // BOTTOM BUTTONS
+        LinearLayout buttons = new LinearLayout(this);
+        buttons.setGravity(Gravity.CENTER);
 
-        resultCard.addView(result);
+        Button copy = new Button(this);
+        copy.setText("📋 COPY");
 
-        main.addView(resultCard);
+        Button clear = new Button(this);
+        clear.setText("🗑 CLEAR");
 
-        Space s5 = new Space(this);
-        main.addView(s5, new LinearLayout.LayoutParams(1, dp(20)));
+        buttons.addView(copy, new LinearLayout.LayoutParams(0, 60, 1));
+        buttons.addView(clear, new LinearLayout.LayoutParams(0, 60, 1));
 
-        TextView footer = text(
-                "🇹🇯  Барои забонҳои тоҷикӣ, русӣ ва англисӣ",
-                13,
-                Color.GRAY
-        );
-        footer.setGravity(Gravity.CENTER);
+        main.addView(buttons);
 
-        main.addView(footer);
+        // TRANSLATE ACTION
+        translate.setOnClickListener(v -> {
+            String text = input.getText().toString();
 
-        translate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                String value = input.getText().toString().trim();
-
-                if (value.isEmpty()) {
-                    result.setText("⚠️ Аввал матнро нависед.");
-                    return;
-                }
-
-                String from = fromLanguage.getSelectedItem().toString();
-                String to = toLanguage.getSelectedItem().toString();
-
-                String answer = translateText(value, from, to);
-
-                result.setText(
-                        from + "  →  " + to +
-                        "\n\n" +
-                        answer
-                );
+            if (text.trim().isEmpty()) {
+                result.setText("Лутфан аввал матнро нависед.");
+            } else {
+                result.setText("Тарҷумаи матн:\n\n" + text);
             }
         });
 
-        scroll.addView(main);
-        setContentView(scroll);
-    }
+        // CLEAR
+        clear.setOnClickListener(v -> {
+            input.setText("");
+            result.setText("Тарҷума дар ин ҷо нишон дода мешавад...");
+        });
 
-    private void loadDictionary() {
-
-        try {
-
-            InputStream stream =
-                    getAssets().open("dictionary.json");
-
-            BufferedReader reader =
-                    new BufferedReader(
-                            new InputStreamReader(stream)
-                    );
-
-            StringBuilder builder = new StringBuilder();
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                builder.append(line);
-            }
-
-            reader.close();
-
-            JSONArray array =
-                    new JSONArray(builder.toString());
-
-            for (int i = 0; i < array.length(); i++) {
-
-                JSONObject word =
-                        array.getJSONObject(i);
-
-                String tj =
-                        word.getString("tj")
-                                .toLowerCase(Locale.ROOT)
-                                .trim();
-
-                String ru =
-                        word.getString("ru")
-                                .toLowerCase(Locale.ROOT)
-                                .trim();
-
-                String en =
-                        word.getString("en")
-                                .toLowerCase(Locale.ROOT)
-                                .trim();
-
-                tjToRu.put(tj, ru);
-                tjToEn.put(tj, en);
-
-                ruToTj.put(ru, tj);
-                ruToEn.put(ru, en);
-
-                enToTj.put(en, tj);
-                enToRu.put(en, ru);
-            }
-
-        } catch (Exception e) {
-
+        // COPY
+        copy.setOnClickListener(v -> {
             Toast.makeText(
                     this,
-                    "dictionary.json ёфт нашуд!",
-                    Toast.LENGTH_LONG
+                    "Тарҷума нусха шуд",
+                    Toast.LENGTH_SHORT
             ).show();
-        }
+        });
+
+        setContentView(main);
     }
 
-    private String translateText(
-            String text,
-            String from,
-            String to
-    ) {
-
-        String lower =
-                text.toLowerCase(Locale.ROOT).trim();
-
-        if (from.contains("Тоҷикӣ") && to.contains("Русӣ"))
-            return findTranslation(lower, tjToRu);
-
-        if (from.contains("Тоҷикӣ") && to.contains("English"))
-            return findTranslation(lower, tjToEn);
-
-        if (from.contains("Русӣ") && to.contains("Тоҷикӣ"))
-            return findTranslation(lower, ruToTj);
-
-        if (from.contains("Русӣ") && to.contains("English"))
-            return findTranslation(lower, ruToEn);
-
-        if (from.contains("English") && to.contains("Тоҷикӣ"))
-            return findTranslation(lower, enToTj);
-
-        if (from.contains("English") && to.contains("Русӣ"))
-            return findTranslation(lower, enToRu);
-
-        if (from.equals(to))
-            return text;
-
-        return "❌ Тарҷума ёфт нашуд.";
+    TextView languageButton(String text) {
+        TextView t = new TextView(this);
+        t.setText(text);
+        t.setTextSize(16);
+        t.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        t.setTextColor(blue);
+        t.setGravity(Gravity.CENTER);
+        t.setPadding(15, 10, 15, 10);
+        return t;
     }
 
-    private String findTranslation(
-            String text,
-            HashMap<String, String> dictionary
-    ) {
-
-        if (dictionary.containsKey(text))
-            return dictionary.get(text);
-
-        String[] words = text.split("\\s+");
-
-        StringBuilder output =
-                new StringBuilder();
-
-        for (String word : words) {
-
-            String clean =
-                    word.replaceAll(
-                            "[.,!?;:()\\[\\]{}\"]",
-                            ""
-                    ).toLowerCase(Locale.ROOT);
-
-            String translated =
-                    dictionary.get(clean);
-
-            if (translated != null)
-                output.append(translated);
-            else
-                output.append(word);
-
-            output.append(" ");
-        }
-
-        String finalText =
-                output.toString().trim();
-
-        if (finalText.equals(text))
-            return "❌ Ин калима дар луғат нест.";
-
-        return finalText;
+    GradientDrawable round(int color, int radius) {
+        GradientDrawable g = new GradientDrawable();
+        g.setColor(color);
+        g.setCornerRadius(radius);
+        return g;
     }
             }
