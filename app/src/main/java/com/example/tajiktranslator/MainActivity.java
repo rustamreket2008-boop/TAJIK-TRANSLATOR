@@ -61,6 +61,18 @@ public class MainActivity extends Activity {
         main.setOrientation(LinearLayout.VERTICAL);
         main.setPadding(dp(20), dp(25), dp(20), dp(30));
 
+        ImageView logo = new ImageView(this);
+logo.setImageResource(R.drawable.logo);
+logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+LinearLayout.LayoutParams logoParams =
+        new LinearLayout.LayoutParams(dp(110), dp(110));
+
+logoParams.gravity = Gravity.CENTER;
+logoParams.bottomMargin = dp(10);
+
+main.addView(logo, logoParams);
+        
         TextView title = new TextView(this);
         title.setText("🌐 TAJIK TRANSLATOR");
         title.setTextSize(27);
