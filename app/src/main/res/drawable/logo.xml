@@ -1,48 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="120dp"
-    android:height="120dp"
-    android:viewportWidth="120"
-    android:viewportHeight="120">
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Background -->
+    <path
+        android:fillColor="#071426"
+        android:pathData="M28,0 L172,0 Q200,0 200,28 L200,172 Q200,200 172,200 L28,200 Q0,200 0,172 L0,28 Q0,0 28,0 Z"/>
+
+    <!-- Inner glass panel -->
+    <path
+        android:fillColor="#102747"
+        android:pathData="M30,12 L170,12 Q188,12 188,30 L188,170 Q188,188 170,188 L30,188 Q12,188 12,170 L12,30 Q12,12 30,12 Z"/>
+
+    <!-- Gold outer accent -->
+    <path
+        android:fillColor="#D9B45B"
+        android:pathData="M32,15 L168,15 Q185,15 185,32 L185,168 Q185,185 168,185 L32,185 Q15,185 15,168 L15,32 Q15,15 32,15 Z"/>
 
     <path
-        android:fillColor="#10172F"
-        android:pathData="M22,4 L98,4 Q116,4 116,22 L116,98 Q116,116 98,116 L22,116 Q4,116 4,98 L4,22 Q4,4 22,4 Z"/>
+        android:fillColor="#102747"
+        android:pathData="M33,19 L167,19 Q181,19 181,33 L181,167 Q181,181 167,181 L33,181 Q19,181 19,167 L19,33 Q19,19 33,19 Z"/>
 
+    <!-- Tajikistan flag -->
     <path
-        android:fillColor="#E53945"
-        android:pathData="M27,27 L93,27 L93,33 L27,33 Z"/>
-
+        android:fillColor="#D92D43"
+        android:pathData="M36,31 L70,31 L70,37 L36,37 Z"/>
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M27,33 L93,33 L93,39 L27,39 Z"/>
-
+        android:pathData="M36,37 L70,37 L70,43 L36,43 Z"/>
     <path
-        android:fillColor="#19A66A"
-        android:pathData="M27,39 L93,39 L93,45 L27,45 Z"/>
+        android:fillColor="#19A568"
+        android:pathData="M36,43 L70,43 L70,49 L36,49 Z"/>
 
+    <!-- Tajik crown -->
+    <path
+        android:fillColor="#F5D477"
+        android:pathData="M46,29 L49,24 L53,28 L56,22 L60,28 L64,24 L67,29 Z"/>
+
+    <!-- Russia flag -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M25,54 L57,54 L57,62 L45,62 L45,84 L37,84 L37,62 L25,62 Z"/>
+        android:pathData="M130,31 L164,31 L164,37 L130,37 Z"/>
+    <path
+        android:fillColor="#2869D8"
+        android:pathData="M130,37 L164,37 L164,43 L130,43 Z"/>
+    <path
+        android:fillColor="#D92D43"
+        android:pathData="M130,43 L164,43 L164,49 L130,49 Z"/>
 
+    <!-- Gold T -->
+    <path
+        android:fillColor="#FFE19A"
+        android:pathData="M37,68 L82,68 L82,80 L66,80 L66,118 L53,118 L53,80 L37,80 Z"/>
+
+    <!-- Translation arrow -->
+    <path
+        android:fillColor="#42DFFF"
+        android:pathData="M77,92 L105,92 L105,84 L120,98 L105,112 L105,104 L77,104 Z"/>
+
+    <!-- Gold A -->
+    <path
+        android:fillColor="#FFE19A"
+        android:pathData="M122,118 L138,68 L153,68 L169,118 L154,118 L151,108 L138,108 L135,118 Z M141,98 L148,98 L145,84 Z"/>
+
+    <!-- UK flag accent -->
+    <path
+        android:fillColor="#173777"
+        android:pathData="M83,132 L117,132 L117,152 L83,152 Z"/>
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M66,54 L94,54 L94,60 L66,60 Z"/>
-
+        android:pathData="M83,132 L88,132 L117,149 L117,152 L112,152 L83,135 Z M117,132 L112,132 L83,149 L83,152 L88,152 L117,135 Z"/>
     <path
-        android:fillColor="#2563EB"
-        android:pathData="M66,60 L94,60 L94,66 L66,66 Z"/>
-
+        android:fillColor="#D92D43"
+        android:pathData="M83,132 L86,132 L117,150 L117,152 L114,152 L83,134 Z M117,132 L114,132 L83,150 L83,152 L86,152 L117,134 Z"/>
     <path
-        android:fillColor="#EF4444"
-        android:pathData="M66,66 L94,66 L94,72 L66,72 Z"/>
-
+        android:fillColor="#FFFFFF"
+        android:pathData="M96,132 L104,132 L104,152 L96,152 Z M83,138 L117,138 L117,146 L83,146 Z"/>
     <path
-        android:fillColor="#38D9F5"
-        android:pathData="M61,78 L83,78 L78,73 L82,70 L96,80 L82,91 L78,88 L83,84 L61,84 Z"/>
+        android:fillColor="#D92D43"
+        android:pathData="M98,132 L102,132 L102,152 L98,152 Z M83,140 L117,140 L117,144 L83,144 Z"/>
 
+    <!-- Modern underline -->
     <path
-        android:fillColor="#FACC15"
-        android:pathData="M60,9 L62,14 L67,14 L63,17 L65,22 L60,19 L55,22 L57,17 L53,14 L58,14 Z"/>
+        android:fillColor="#42DFFF"
+        android:pathData="M43,164 L157,164 L157,167 L43,167 Z"/>
 
 </vector>
